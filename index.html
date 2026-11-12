@@ -72,27 +72,27 @@
                     <!-- Pilih Murid -->
                     <div class="w-full">
                         <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Pilih Murid</label>
-                        <div class="grid grid-cols-[1fr_44px] gap-2.5 items-center w-full">
-                            <div class="min-w-0 w-full relative">
-                                <select id="selectMurid" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl pl-3 pr-8 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_12px_center] bg-no-repeat">
+                        <div class="flex space-x-2.5 items-center w-full">
+                            <div class="flex-1 min-w-0">
+                                <select id="selectMurid" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-3 py-3.5 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate">
                                     <option value="">Pilih Nama Murid...</option>
                                 </select>
                             </div>
-                            <button type="button" onclick="bukaModalMurid()" class="w-11 h-[46px] bg-blue-100/50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl font-medium text-[15px] active:scale-95 transition-transform flex items-center justify-center shrink-0">
+                            <button type="button" onclick="bukaModalMurid()" class="w-12 h-[48px] bg-blue-100/50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl font-medium text-[15px] active:scale-95 transition-transform flex items-center justify-center shrink-0">
                                 <i class="fa-solid fa-user-plus"></i>
                             </button>
                         </div>
                     </div>
 
                     <!-- Tanggal & Sesi -->
-                    <div class="grid grid-cols-2 gap-2.5 w-full">
-                        <div class="min-w-0 w-full">
+                    <div class="flex space-x-2.5 w-full">
+                        <div class="flex-1 min-w-0">
                             <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Tanggal</label>
-                            <input type="date" id="inputTanggal" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-2.5 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                            <input type="date" id="inputTanggal" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-2 py-3.5 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                         </div>
-                        <div class="min-w-0 w-full relative">
+                        <div class="flex-1 min-w-0">
                             <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Jumlah Sesi</label>
-                            <select id="inputSesi" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl pl-3 pr-8 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_12px_center] bg-no-repeat">
+                            <select id="inputSesi" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-2 py-3.5 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate">
                                 <option value="1">1 Sesi</option>
                                 <option value="1.5">1.5 Sesi</option>
                                 <option value="2">2 Sesi (Double)</option>
@@ -103,7 +103,7 @@
                     <!-- Materi / Catatan -->
                     <div>
                         <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Materi / Catatan</label>
-                        <input type="text" id="inputMateri" required placeholder="Tulis catatan belajar..." class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-3 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                        <input type="text" id="inputMateri" required placeholder="Tulis catatan belajar..." class="w-full bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-4 py-3.5 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                     </div>
 
                     <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold py-3.5 rounded-xl text-[15px] transition shadow-md shadow-blue-500/20 mt-2">
