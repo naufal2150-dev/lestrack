@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="id" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LesTrack - Pencatatan & Invoice Les</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        ios: { bg: '#f2f2f7', card: '#ffffff', text: '#1c1c1e', muted: '#8e8e93', border: '#c6c6c8' },
+                        iosDark: { bg: '#000000', card: '#1c1c1e', text: '#f2f2f7', muted: '#98989f', border: '#38383a' }
+                    }
+                }
+            }
+        }
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+</head>
+<body class="bg-ios dark:bg-iosDark text-ios dark:text-iosDark font-sans pb-24 transition-colors duration-200">
+
+    <!-- Header / Navbar -->
+    <header class="sticky top-0 z-30 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex justify-between items-center">
+        <div class="flex items-center space-x-2">
+            <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm">LT</div>
+            <h1 class="font-bold text-lg tracking-tight">LesTrack</h1>
+        </div>
+        <div class="flex items-center space-x-2">
+            <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300">
+                <i id="themeIcon" class="fa-solid fa-moon"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-md mx-auto p-4 space-y-4">
+
+        <!-- TAB 1: CATAT SESI -->
+        <section id="tab-catat" class="space-y-4">
+            <div class="bg-white dark:bg-iosDark card-box rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+                <h2 class="font-semibold text-base mb-3 flex items-center"><i class="fa-solid fa-pen-to-square text-blue-500 mr-2"></i> Catat Pertemuan</h2>
+                
+                <form id="formCatat" onsubmit="simpanSesi(event)" class="space-y-3">
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Pilih Murid</label>
+                        <div class="flex space-x-2">
+                            <select id="selectMurid" required class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="">-- Pilih Nama Murid --</option>
+                            </select>
+                            <button type="button" onclick="bukaModalMurid()" class="bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 rounded-xl font-medium text-sm border border-blue-200 dark:border-blue-800">
+                                <i class="fa-solid fa-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Tanggal</label>
+                            <input type="date" id="inputTanggal" required class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Jumlah Sesi</label>
+                            <select id="inputSesi" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="1">1 Sesi (Normal)</option>
+                                <option value="1.5">1.5 Sesi</option>
+                                <option value="2">2 Sesi (Double)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Materi / Catatan Belajar</label>
+                        <input type="text" id="inputMateri" required placeholder="Contoh: Persamaan Kuadrat & PR Bab 3" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <div class="flex flex-wrap gap-1 mt-2">
+                            <span onclick="setMateri('Matematika: Aljabar')" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg cursor-pointer">Matematika</span>
+                            <span onclick="setMateri('Fisika: Hukum Newton')" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg cursor-pointer">Fisika</span>
+                            <span onclick="setMateri('Bahasa Inggris: Grammar')" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg cursor-pointer">B. Inggris</span>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-sm">
+                        Simpan Catatan Sesi
+                    </button>
+                </form>
+            </div>
+
+            <!-- Riwayat Terbaru -->
+            <div class="bg-white dark:bg-iosDark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="font-semibold text-sm">Riwayat Sesi Terakhir</h3>
+                    <span id="totalSesiCount" class="text-xs text-gray-400">0 sesi</span>
+                </div>
+                <div id="listRiwayat" class="space-y-2.5">
+                    <!-- Dinamis -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 2: INVOICE & REKAP -->
+        <section id="tab-invoice" class="space-y-4 hidden">
+            <div class="bg-white dark:bg-iosDark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-semibold text-base flex items-center"><i class="fa-solid fa-file-invoice-dollar text-green-500 mr-2"></i> Rekap Tagihan</h2>
+                    <input type="month" id="filterBulan" onchange="renderInvoice()" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-2.5 py-1 text-xs focus:outline-none">
+                </div>
+                <div id="listTagihan" class="space-y-3">
+                    <!-- Dinamis -->
+                </div>
+            </div>
+        </section>
+
+        <!-- TAB 3: DATA MURID -->
+        <section id="tab-murid" class="space-y-4 hidden">
+            <div class="bg-white dark:bg-iosDark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
+                <div class="flex justify-between items-center mb-3">
+                    <h2 class="font-semibold text-base flex items-center"><i class="fa-solid fa-users text-purple-500 mr-2"></i> Daftar Murid</h2>
+                    <button onclick="bukaModalMurid()" class="bg-blue-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium">
+                        <i class="fa-solid fa-plus mr-1"></i> Tambah
+                    </button>
+                </div>
+                <div id="listMurid" class="space-y-2">
+                    <!-- Dinamis -->
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Navigation Bar (iOS Style) -->
+    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 px-6 py-2 flex justify-between items-center z-30">
+        <button onclick="switchTab('catat')" id="navCatat" class="flex flex-col items-center text-blue-600 dark:text-blue-400">
+            <i class="fa-solid fa-calendar-plus text-lg"></i>
+            <span class="text-[10px] font-medium mt-0.5">Catat Sesi</span>
+        </button>
+        <button onclick="switchTab('invoice')" id="navInvoice" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+            <i class="fa-solid fa-receipt text-lg"></i>
+            <span class="text-[10px] font-medium mt-0.5">Invoice</span>
+        </button>
+        <button onclick="switchTab('murid')" id="navMurid" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
+            <i class="fa-solid fa-user-graduate text-lg"></i>
+            <span class="text-[10px] font-medium mt-0.5">Murid</span>
+        </button>
+    </nav>
+
+    <!-- MODAL TAMBAH MURID -->
+    <div id="modalMurid" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white dark:bg-iosDark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-xl border border-gray-100 dark:border-gray-800">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base">Tambah Murid Baru</h3>
+                <button onclick="tutupModalMurid()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+            <form onsubmit="simpanMurid(event)" class="space-y-3">
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Nama Murid</label>
+                    <input type="text" id="mNama" required placeholder="Contoh: Budi Santoso" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">No. WhatsApp Orang Tua</label>
+                    <input type="text" id="mWa" required placeholder="08123456789" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Tarif per Sesi (Rp)</label>
+                    <input type="number" id="mTarif" required placeholder="100000" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm">
+                </div>
+                <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Simpan Murid</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL PREVIEW INVOICE & CETAK -->
+    <div id="modalInvoice" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-white dark:bg-iosDark w-full max-w-lg rounded-2xl p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-gray-800">
+            <div class="flex justify-between items-center border-b pb-3 dark:border-gray-800">
+                <div>
+                    <h3 class="font-bold text-base" id="invModalTitle">Invoice Les</h3>
+                    <p class="text-xs text-gray-400" id="invModalPeriode">Periode</p>
+                </div>
+                <button onclick="tutupModalInvoice()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fa-solid fa-xmark"></i></button>
+            </div>
+
+            <!-- Area yang akan dijadikan PDF -->
+            <div id="invoiceArea" class="bg-white text-gray-800 p-4 rounded-xl border border-gray-200 space-y-3 text-xs">
+                <div class="flex justify-between items-start border-b pb-3">
+                    <div>
+                        <h4 class="font-bold text-sm text-blue-600">LES PRIVAT EXCELLENT</h4>
+                        <p class="text-gray-500">Guru Les Privat Profesional</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="font-semibold" id="printNoInv">INV/2026/11/001</p>
+                        <p class="text-gray-500" id="printTanggalCetak">Tanggal: 12 Nov 2026</p>
+                    </div>
+                </div>
+                <div>
+                    <p class="text-gray-500">Kepada Yth. Orang Tua dari:</p>
+                    <p class="font-bold text-sm" id="printNamaMurid">-</p>
+                </div>
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b bg-gray-50">
+                            <th class="py-1.5 px-2">Tanggal</th>
+                            <th class="py-1.5 px-2">Materi</th>
+                            <th class="py-1.5 px-2 text-center">Sesi</th>
+                            <th class="py-1.5 px-2 text-right">Biaya</th>
+                        </tr>
+                    </thead>
+                    <tbody id="printTabelItem">
+                        <!-- Dinamis -->
+                    </tbody>
+                </table>
+                <div class="border-t pt-2 flex justify-between font-bold text-sm">
+                    <span>Total Tagihan:</span>
+                    <span id="printTotalTagihan" class="text-blue-600">Rp 0</span>
+                </div>
+                <div class="bg-gray-50 p-2.5 rounded-lg text-[11px] text-gray-600 space-y-1">
+                    <p class="font-semibold">Pembayaran transfer ke:</p>
+                    <p>BCA a.n. Guru Les (No. Rek: 1234567890)</p>
+                    <p>Mohon konfirmasi setelah transfer. Terima kasih!</p>
+                </div>
+            </div>
+
+            <div class="flex space-x-2 pt-2">
+                <button onclick="downloadPDF()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1">
+                    <i class="fa-solid fa-file-pdf"></i> <span>Download PDF</span>
+                </button>
+                <button onclick="kirimWA()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1">
+                    <i class="fa-brands fa-whatsapp"></i> <span>Kirim ke WA</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Aplikasi -->
+    <script>
+        // State Data Lokal
+        let muridList = JSON.parse(localStorage.getItem('lt_murid')) || [
+            { id: '1', nama: 'Andi Pratama', wa: '08123456789', tarif: 100000 },
+            { id: '2', nama: 'Siti Rahma', wa: '08987654321', tarif: 120000 }
+        ];
+
+        let sesiList = JSON.parse(localStorage.getItem('lt_sesi')) || [
+            { id: 's1', muridId: '1', tanggal: '2026-11-01', materi: 'Aljabar & Persamaan Linear', sesi: 1, lunas: false },
+            { id: 's2', muridId: '1', tanggal: '2026-11-05', materi: 'Pertidaksamaan Kuadrat', sesi: 1, lunas: false },
+            { id: 's3', muridId: '2', tanggal: '2026-11-03', materi: 'Hukum Newton I & II', sesi: 1.5, lunas: true }
+        ];
+
+        let activeInvoiceData = null;
+
+        // Inisialisasi awal
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('inputTanggal').valueAsDate = new Date();
+            document.getElementById('filterBulan').value = new Date().toISOString().slice(0, 7);
+            renderMuridSelect();
+            renderRiwayat();
+            renderMuridList();
+            renderInvoice();
+        });
+
+        function saveData() {
+            localStorage.setItem('lt_murid', JSON.stringify(muridList));
+            localStorage.setItem('lt_sesi', JSON.stringify(sesiList));
+        }
+
+        // Navigasi Tab
+        function switchTab(tab) {
+            ['catat', 'invoice', 'murid'].forEach(t => {
+                document.getElementById(`tab-${t}`).classList.add('hidden');
+                document.getElementById(`nav${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "flex flex-col items-center text-gray-400";
+            });
+            document.getElementById(`tab-${tab}`).classList.remove('hidden');
+            document.getElementById(`nav${tab.charAt(0).toUpperCase() + tab.slice(1)}`).className = "flex flex-col items-center text-blue-600 dark:text-blue-400";
+        }
+
+        // Dark Mode Toggle
+        function toggleDarkMode() {
+            const html = document.documentElement;
+            const icon = document.getElementById('themeIcon');
+            if (html.classList.contains('light')) {
+                html.classList.remove('light');
+                html.classList.add('dark');
+                icon.className = "fa-solid fa-sun";
+            } else {
+                html.classList.remove('dark');
+                html.classList.add('light');
+                icon.className = "fa-solid fa-moon";
+            }
+        }
+
+        function setMateri(teks) {
+            document.getElementById('inputMateri').value = teks;
+        }
+
+        // Render Select Murid
+        function renderMuridSelect() {
+            const select = document.getElementById('selectMurid');
+            select.innerHTML = '<option value="">-- Pilih Nama Murid --</option>';
+            muridList.forEach(m => {
+                select.innerHTML += `<option value="${m.id}">${m.nama} (Rp ${m.tarif.toLocaleString('id-ID')}/sesi)</option>`;
+            });
+        }
+
+        // Simpan Sesi Baru
+        function simpanSesi(e) {
+            e.preventDefault();
+            const sesiBaru = {
+                id: 's_' + Date.now(),
+                muridId: document.getElementById('selectMurid').value,
+                tanggal: document.getElementById('inputTanggal').value,
+                materi: document.getElementById('inputMateri').value,
+                sesi: parseFloat(document.getElementById('inputSesi').value),
+                lunas: false
+            };
+            sesiList.unshift(sesiBaru);
+            saveData();
+            renderRiwayat();
+            renderInvoice();
+            document.getElementById('inputMateri').value = '';
+            alert('Catatan sesi berhasil disimpan!');
+        }
+
+        // Render Riwayat
+        function renderRiwayat() {
+            const container = document.getElementById('listRiwayat');
+            document.getElementById('totalSesiCount').innerText = `${sesiList.length} total sesi`;
+            if (sesiList.length === 0) {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Belum ada sesi tercatat.</p>`;
+                return;
+            }
+            container.innerHTML = '';
+            sesiList.slice(0, 5).forEach(s => {
+                const murid = muridList.find(m => m.id === s.muridId) || { nama: 'Murid Dihapus' };
+                const totalTarif = s.sesi * (murid.tarif || 0);
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 text-xs">
+                        <div>
+                            <p class="font-bold">${murid.nama}</p>
+                            <p class="text-gray-500">${s.tanggal} • ${s.materi} (${s.sesi} Sesi)</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="font-semibold text-blue-600">Rp ${totalTarif.toLocaleString('id-ID')}</p>
+                            <button onclick="hapusSesi('${s.id}')" class="text-red-500 text-[10px] mt-0.5">Hapus</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+
+        function hapusSesi(id) {
+            if (confirm('Hapus catatan sesi ini?')) {
+                sesiList = sesiList.filter(s => s.id !== id);
+                saveData();
+                renderRiwayat();
+                renderInvoice();
+            }
+        }
+
+        // Modal Murid
+        function bukaModalMurid() { document.getElementById('modalMurid').classList.remove('hidden'); }
+        function tutupModalMurid() { document.getElementById('modalMurid').classList.add('hidden'); }
+
+        function simpanMurid(e) {
+            e.preventDefault();
+            const baru = {
+                id: 'm_' + Date.now(),
+                nama: document.getElementById('mNama').value,
+                wa: document.getElementById('mWa').value,
+                tarif: parseInt(document.getElementById('mTarif').value)
+            };
+            muridList.push(baru);
+            saveData();
+            renderMuridSelect();
+            renderMuridList();
+            tutupModalMurid();
+            document.getElementById('mNama').value = '';
+            document.getElementById('mWa').value = '';
+            document.getElementById('mTarif').value = '';
+        }
+
+        function renderMuridList() {
+            const container = document.getElementById('listMurid');
+            container.innerHTML = '';
+            muridList.forEach(m => {
+                container.innerHTML += `
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 text-xs">
+                        <div>
+                            <p class="font-bold">${m.nama}</p>
+                            <p class="text-gray-500">WA: ${m.wa} • Tarif: Rp ${m.tarif.toLocaleString('id-ID')}/sesi</p>
+                        </div>
+                        <button onclick="hapusMurid('${m.id}')" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                    </div>
+                `;
+            });
+        }
+
+        function hapusMurid(id) {
+            if (confirm('Hapus data murid ini?')) {
+                muridList = muridList.filter(m => m.id !== id);
+                saveData();
+                renderMuridSelect();
+                renderMuridList();
+            }
+        }
+
+        // Render Invoice / Rekap Bulanan
+        function renderInvoice() {
+            const bulanPilih = document.getElementById('filterBulan').value; // Format: YYYY-MM
+            const container = document.getElementById('listTagihan');
+            container.innerHTML = '';
+
+            if (!bulanPilih) return;
+
+            muridList.forEach(m => {
+                const sesiMuridBulanIni = sesiList.filter(s => s.muridId === m.id && s.tanggal.startsWith(bulanPilih));
+                if (sesiMuridBulanIni.length === 0) return;
+
+                const totalSesi = sesiMuridBulanIni.reduce((acc, curr) => acc + curr.sesi, 0);
+                const totalBiaya = totalSesi * m.tarif;
+                const statusLunas = sesiMuridBulanIni.every(s => s.lunas);
+
+                container.innerHTML += `
+                    <div class="bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800 text-xs space-y-2">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <p class="font-bold text-sm">${m.nama}</p>
+                                <p class="text-gray-500">${totalSesi} Sesi (${bulanPilih})</p>
+                            </div>
+                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium ${statusLunas ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
+                                ${statusLunas ? 'Lunas' : 'Belum Lunas'}
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-800">
+                            <span class="font-bold text-blue-600">Rp ${totalBiaya.toLocaleString('id-ID')}</span>
+                            <div class="space-x-1">
+                                <button onclick="toggleStatusLunas('${m.id}', '${bulanPilih}')" class="bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-lg">Status</button>
+                                <button onclick="bukaModalInvoice('${m.id}', '${bulanPilih}')" class="bg-blue-600 text-white px-2.5 py-1 rounded-lg">Invoice</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            if (container.innerHTML === '') {
+                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Tidak ada sesi les pada bulan ${bulanPilih}.</p>`;
+            }
+        }
+
+        function toggleStatusLunas(muridId, bulan) {
+            sesiList.forEach(s => {
+                if (s.muridId === muridId && s.tanggal.startsWith(bulan)) {
+                    s.lunas = !s.lunas;
+                }
+            });
+            saveData();
+            renderInvoice();
+        }
+
+        // Modal Invoice & PDF
+        function bukaModalInvoice(muridId, bulan) {
+            const murid = muridList.find(m => m.id === muridId);
+            const sesiMurid = sesiList.filter(s => s.muridId === muridId && s.tanggal.startsWith(bulan));
+            
+            document.getElementById('invModalTitle').innerText = `Invoice - ${murid.nama}`;
+            document.getElementById('invModalPeriode').innerText = `Periode: ${bulan}`;
+            document.getElementById('printNoInv').innerText = `INV/${bulan.replace('-', '/')}/${muridId}`;
+            document.getElementById('printTanggalCetak').innerText = `Tanggal: ${new Date().toLocaleDateString('id-ID')}`;
+            document.getElementById('printNamaMurid').innerText = `${murid.nama} (WA: ${murid.wa})`;
+
+            let tbody = '';
+            let total = 0;
+            sesiMurid.forEach(s => {
+                const sub = s.sesi * murid.tarif;
+                total += sub;
+                tbody += `
+                    <tr class="border-b">
+                        <td class="py-1.5 px-2">${s.tanggal}</td>
+                        <td class="py-1.5 px-2">${s.materi}</td>
+                        <td class="py-1.5 px-2 text-center">${s.sesi}</td>
+                        <td class="py-1.5 px-2 text-right">Rp ${sub.toLocaleString('id-ID')}</td>
+                    </tr>
+                `;
+            });
+            document.getElementById('printTabelItem').innerHTML = tbody;
+            document.getElementById('printTotalTagihan').innerText = `Rp ${total.toLocaleString('id-ID')}`;
+
+            activeInvoiceData = { murid, sesiMurid, total, bulan };
+            document.getElementById('modalInvoice').classList.remove('hidden');
+        }
+
+        function tutupModalInvoice() {
+            document.getElementById('modalInvoice').classList.add('hidden');
+        }
+
+        function downloadPDF() {
+            const element = document.getElementById('invoiceArea');
+            const opt = {
+                margin: 10,
+                filename: `Invoice_${activeInvoiceData.murid.nama}_${activeInvoiceData.bulan}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().from(element).set(opt).save();
+        }
+
+        function kirimWA() {
+            const d = activeInvoiceData;
+            let pesan = `Halo Bapak/Ibu, berikut rincian tagihan les privat *${d.murid.nama}* periode *${d.bulan}*:\n\n`;
+            d.sesiMurid.forEach((s, idx) => {
+                pesan += `${idx + 1}. ${s.tanggal} - ${s.materi} (${s.sesi} Sesi)\n`;
+            });
+            pesan += `\n*Total Tagihan: Rp ${d.total.toLocaleString('id-ID')}*\n\nMohon transfer ke Rek. BCA 1234567890 a.n. Guru Les. Terima kasih!`;
+            const url = `https://wa.me/${d.murid.wa.replace(/^0/, '62')}?text=${encodeURIComponent(pesan)}`;
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+</html>
