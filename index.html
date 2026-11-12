@@ -70,29 +70,29 @@
                 
                 <form id="formCatat" onsubmit="simpanSesi(event)" class="space-y-4">
                     <!-- Pilih Murid -->
-                    <div>
+                    <div class="w-full">
                         <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Pilih Murid</label>
-                        <div class="flex gap-2 items-center">
-                            <div class="flex-1 min-w-0">
-                                <select id="selectMurid" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl pl-3 pr-6 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate">
+                        <div class="grid grid-cols-[1fr_44px] gap-2.5 items-center w-full">
+                            <div class="min-w-0 w-full relative">
+                                <select id="selectMurid" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl pl-3 pr-8 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_12px_center] bg-no-repeat">
                                     <option value="">Pilih Nama Murid...</option>
                                 </select>
                             </div>
-                            <button type="button" onclick="bukaModalMurid()" class="shrink-0 bg-blue-100/50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 w-11 h-[46px] rounded-xl font-medium text-[15px] active:scale-95 transition-transform flex items-center justify-center">
+                            <button type="button" onclick="bukaModalMurid()" class="w-11 h-[46px] bg-blue-100/50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 rounded-xl font-medium text-[15px] active:scale-95 transition-transform flex items-center justify-center shrink-0">
                                 <i class="fa-solid fa-user-plus"></i>
                             </button>
                         </div>
                     </div>
 
                     <!-- Tanggal & Sesi -->
-                    <div class="flex gap-2">
-                        <div class="flex-1 min-w-0">
+                    <div class="grid grid-cols-2 gap-2.5 w-full">
+                        <div class="min-w-0 w-full">
                             <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Tanggal</label>
                             <input type="date" id="inputTanggal" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-2.5 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                         </div>
-                        <div class="flex-1 min-w-0">
+                        <div class="min-w-0 w-full relative">
                             <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Jumlah Sesi</label>
-                            <select id="inputSesi" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-2.5 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate">
+                            <select id="inputSesi" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl pl-3 pr-8 py-3 text-[14px] text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors truncate appearance-none bg-[url('data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%239CA3AF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E')] bg-[length:12px_12px] bg-[right_12px_center] bg-no-repeat">
                                 <option value="1">1 Sesi</option>
                                 <option value="1.5">1.5 Sesi</option>
                                 <option value="2">2 Sesi (Double)</option>
@@ -231,11 +231,11 @@
                 <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
 
                 <div class="flex justify-between items-start border-b border-gray-100 pb-4 mt-2">
-                    <div>
+                    <div class="flex-1 pr-3">
                         <h4 class="font-bold text-[17px] text-blue-600 tracking-tight">INVOICE LES</h4>
-                        <p class="text-gray-500 mt-0.5">CEKELAS by Melani</p>
+                        <p class="text-gray-500 mt-1 text-[11px] leading-tight">CEKELAS Cek Kemampuan dan Naik Kelas by Melani</p>
                     </div>
-                    <div class="text-right">
+                    <div class="text-right shrink-0">
                         <p class="font-bold text-gray-800" id="printNoInv">INV/11/2026/001</p>
                         <p class="text-gray-500 mt-0.5" id="printTanggalCetak">Tgl: 12 Nov 2026</p>
                     </div>
