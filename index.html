@@ -2,7 +2,7 @@
 <html lang="id" class="light">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>LesTrack - Pencatatan & Invoice Les</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -10,9 +10,15 @@
             darkMode: 'class',
             theme: {
                 extend: {
+                    fontFamily: {
+                        sans: ['-apple-system', 'BlinkMacSystemFont', '"Segoe UI"', 'Roboto', 'Helvetica', 'Arial', 'sans-serif'],
+                    },
                     colors: {
-                        ios: { bg: '#f2f2f7', card: '#ffffff', text: '#1c1c1e', muted: '#8e8e93', border: '#c6c6c8' },
-                        iosDark: { bg: '#000000', card: '#1c1c1e', text: '#f2f2f7', muted: '#98989f', border: '#38383a' }
+                        ios: { bg: '#f2f2f7', card: '#ffffff', text: '#1c1c1e', muted: '#8e8e93', border: '#c6c6c8', blue: '#007aff' },
+                        iosDark: { bg: '#000000', card: '#1c1c1e', text: '#f2f2f7', muted: '#98989f', border: '#38383a', input: '#2c2c2e' }
+                    },
+                    boxShadow: {
+                        'ios': '0 4px 24px rgba(0,0,0,0.04)',
                     }
                 }
             }
@@ -20,52 +26,70 @@
     </script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        /* Sembunyikan scrollbar untuk tampilan yang lebih bersih */
+        ::-webkit-scrollbar { display: none; }
+        
+        /* Support safe area untuk iPhone modern (Notch & Home Indicator) */
+        body {
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+            -webkit-tap-highlight-color: transparent;
+        }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+    </style>
 </head>
-<body class="bg-ios dark:bg-iosDark text-ios dark:text-iosDark font-sans pb-24 transition-colors duration-200">
+<body class="bg-ios-bg dark:bg-iosDark-bg text-ios-text dark:text-iosDark-text font-sans transition-colors duration-300">
+
+    <!-- Notifikasi Toast Khas iOS -->
+    <div id="toast" class="fixed top-5 left-1/2 transform -translate-x-1/2 bg-gray-800/90 backdrop-blur-md text-white px-5 py-2.5 rounded-full text-sm font-medium opacity-0 transition-opacity duration-300 z-50 pointer-events-none shadow-lg">
+        Berhasil disimpan!
+    </div>
 
     <!-- Header / Navbar -->
-    <header class="sticky top-0 z-30 bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 px-4 py-3 flex justify-between items-center">
-        <div class="flex items-center space-x-2">
-            <div class="w-8 h-8 rounded-xl bg-blue-600 flex items-center justify-center text-white font-bold text-sm">LT</div>
-            <h1 class="font-bold text-lg tracking-tight">LesTrack</h1>
+    <header class="sticky top-0 z-30 bg-white/70 dark:bg-[#1c1c1e]/70 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800 px-5 py-3.5 flex justify-between items-center transition-colors">
+        <div class="flex items-center space-x-3">
+            <div class="w-8 h-8 rounded-lg bg-blue-500 shadow-md shadow-blue-500/30 flex items-center justify-center text-white font-bold text-sm tracking-wide">LT</div>
+            <h1 class="font-bold text-[19px] tracking-tight">LesTrack</h1>
         </div>
-        <div class="flex items-center space-x-2">
-            <button onclick="toggleDarkMode()" class="w-9 h-9 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300">
-                <i id="themeIcon" class="fa-solid fa-moon"></i>
+        <div class="flex items-center">
+            <button onclick="toggleDarkMode()" class="w-8 h-8 rounded-full bg-gray-200/60 dark:bg-gray-800 flex items-center justify-center text-gray-700 dark:text-gray-300 active:scale-95 transition-transform">
+                <i id="themeIcon" class="fa-solid fa-moon text-sm"></i>
             </button>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-md mx-auto p-4 space-y-4">
+    <main class="max-w-md mx-auto p-4 space-y-5">
 
         <!-- TAB 1: CATAT SESI -->
-        <section id="tab-catat" class="space-y-4">
-            <div class="bg-white dark:bg-iosDark card-box rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-                <h2 class="font-semibold text-base mb-3 flex items-center"><i class="fa-solid fa-pen-to-square text-blue-500 mr-2"></i> Catat Pertemuan</h2>
+        <section id="tab-catat" class="space-y-5 animate-fade-in">
+            <div class="bg-white dark:bg-iosDark-card rounded-[20px] p-5 shadow-ios border border-gray-100 dark:border-iosDark-border transition-colors">
+                <h2 class="font-bold text-[17px] mb-4 flex items-center tracking-tight"><i class="fa-solid fa-pen-to-square text-blue-500 mr-2.5 text-lg"></i> Catat Pertemuan</h2>
                 
-                <form id="formCatat" onsubmit="simpanSesi(event)" class="space-y-3">
+                <form id="formCatat" onsubmit="simpanSesi(event)" class="space-y-4">
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Pilih Murid</label>
+                        <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Pilih Murid</label>
                         <div class="flex space-x-2">
-                            <select id="selectMurid" required class="flex-1 bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="">-- Pilih Nama Murid --</option>
+                            <select id="selectMurid" required class="flex-1 bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                                <option value="">Pilih Nama Murid...</option>
                             </select>
-                            <button type="button" onclick="bukaModalMurid()" class="bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-3 rounded-xl font-medium text-sm border border-blue-200 dark:border-blue-800">
-                                <i class="fa-solid fa-plus"></i>
+                            <button type="button" onclick="bukaModalMurid()" class="bg-blue-100/50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 px-4 rounded-xl font-medium text-sm active:scale-95 transition-transform">
+                                <i class="fa-solid fa-user-plus"></i>
                             </button>
                         </div>
                     </div>
 
-                    <div class="grid grid-cols-2 gap-2">
+                    <div class="grid grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Tanggal</label>
-                            <input type="date" id="inputTanggal" required class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Tanggal</label>
+                            <input type="date" id="inputTanggal" required class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                         </div>
                         <div>
-                            <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Jumlah Sesi</label>
-                            <select id="inputSesi" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                                <option value="1">1 Sesi (Normal)</option>
+                            <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Jumlah Sesi</label>
+                            <select id="inputSesi" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
+                                <option value="1">1 Sesi</option>
                                 <option value="1.5">1.5 Sesi</option>
                                 <option value="2">2 Sesi (Double)</option>
                             </select>
@@ -73,39 +97,46 @@
                     </div>
 
                     <div>
-                        <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Materi / Catatan Belajar</label>
-                        <input type="text" id="inputMateri" required placeholder="Contoh: Persamaan Kuadrat & PR Bab 3" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
-                        <div class="flex flex-wrap gap-1 mt-2">
-                            <span onclick="setMateri('Matematika: Aljabar')" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg cursor-pointer">Matematika</span>
-                            <span onclick="setMateri('Fisika: Hukum Newton')" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg cursor-pointer">Fisika</span>
-                            <span onclick="setMateri('Bahasa Inggris: Grammar')" class="text-xs bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-1 rounded-lg cursor-pointer">B. Inggris</span>
-                        </div>
+                        <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Materi / Catatan</label>
+                        <input type="text" id="inputMateri" required placeholder="Tulis catatan belajar..." class="w-full bg-gray-100 dark:bg-iosDark-input border-0 dark:border border-transparent dark:border-gray-700 rounded-xl px-4 py-3 text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                     </div>
 
-                    <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-sm transition shadow-sm">
-                        Simpan Catatan Sesi
+                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold py-3.5 rounded-xl text-[15px] transition shadow-md shadow-blue-500/20 mt-2">
+                        Simpan Sesi
                     </button>
                 </form>
             </div>
 
             <!-- Riwayat Terbaru -->
-            <div class="bg-white dark:bg-iosDark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-                <div class="flex justify-between items-center mb-3">
-                    <h3 class="font-semibold text-sm">Riwayat Sesi Terakhir</h3>
-                    <span id="totalSesiCount" class="text-xs text-gray-400">0 sesi</span>
+            <div class="bg-white dark:bg-iosDark-card rounded-[20px] p-5 shadow-ios border border-gray-100 dark:border-iosDark-border transition-colors">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="font-bold text-[17px] tracking-tight">Riwayat Terakhir</h3>
+                    <span id="totalSesiCount" class="text-[13px] text-gray-400 font-medium">0 sesi</span>
                 </div>
-                <div id="listRiwayat" class="space-y-2.5">
+                <div id="listRiwayat" class="space-y-3">
                     <!-- Dinamis -->
                 </div>
             </div>
         </section>
 
         <!-- TAB 2: INVOICE & REKAP -->
-        <section id="tab-invoice" class="space-y-4 hidden">
-            <div class="bg-white dark:bg-iosDark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="font-semibold text-base flex items-center"><i class="fa-solid fa-file-invoice-dollar text-green-500 mr-2"></i> Rekap Tagihan</h2>
-                    <input type="month" id="filterBulan" onchange="renderInvoice()" class="bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-2.5 py-1 text-xs focus:outline-none">
+        <section id="tab-invoice" class="space-y-4 hidden animate-fade-in">
+            
+            <!-- Kotak Total Pendapatan Bulanan -->
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-[20px] p-5 shadow-lg shadow-blue-500/30 text-white flex justify-between items-center">
+                <div>
+                    <p class="text-blue-100 text-[13px] font-medium mb-1">Total Penghasilan</p>
+                    <p class="text-2xl font-bold tracking-tight" id="angkaTotalPendapatan">Rp 0</p>
+                </div>
+                <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md">
+                    <i class="fa-solid fa-wallet text-xl"></i>
+                </div>
+            </div>
+
+            <div class="bg-white dark:bg-iosDark-card rounded-[20px] p-5 shadow-ios border border-gray-100 dark:border-iosDark-border transition-colors">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-[17px] flex items-center tracking-tight"><i class="fa-solid fa-file-invoice-dollar text-green-500 mr-2.5"></i> Rekap Bulan Ini</h2>
+                    <input type="month" id="filterBulan" onchange="renderInvoice()" class="bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-3 py-2 text-[14px] font-medium focus:outline-none focus:ring-2 focus:ring-blue-500">
                 </div>
                 <div id="listTagihan" class="space-y-3">
                     <!-- Dinamis -->
@@ -114,15 +145,15 @@
         </section>
 
         <!-- TAB 3: DATA MURID -->
-        <section id="tab-murid" class="space-y-4 hidden">
-            <div class="bg-white dark:bg-iosDark rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-gray-800">
-                <div class="flex justify-between items-center mb-3">
-                    <h2 class="font-semibold text-base flex items-center"><i class="fa-solid fa-users text-purple-500 mr-2"></i> Daftar Murid</h2>
-                    <button onclick="bukaModalMurid()" class="bg-blue-600 text-white px-3 py-1.5 rounded-xl text-xs font-medium">
+        <section id="tab-murid" class="space-y-4 hidden animate-fade-in">
+            <div class="bg-white dark:bg-iosDark-card rounded-[20px] p-5 shadow-ios border border-gray-100 dark:border-iosDark-border transition-colors">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="font-bold text-[17px] flex items-center tracking-tight"><i class="fa-solid fa-user-graduate text-purple-500 mr-2.5"></i> Daftar Murid</h2>
+                    <button onclick="bukaModalMurid()" class="bg-blue-100/50 dark:bg-blue-500/20 text-blue-600 dark:text-blue-400 px-3.5 py-2 rounded-xl text-[13px] font-bold active:scale-95 transition-transform">
                         <i class="fa-solid fa-plus mr-1"></i> Tambah
                     </button>
                 </div>
-                <div id="listMurid" class="space-y-2">
+                <div id="listMurid" class="space-y-3">
                     <!-- Dinamis -->
                 </div>
             </div>
@@ -131,128 +162,159 @@
     </main>
 
     <!-- Bottom Navigation Bar (iOS Style) -->
-    <nav class="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-md border-t border-gray-200 dark:border-gray-800 px-6 py-2 flex justify-between items-center z-30">
-        <button onclick="switchTab('catat')" id="navCatat" class="flex flex-col items-center text-blue-600 dark:text-blue-400">
-            <i class="fa-solid fa-calendar-plus text-lg"></i>
-            <span class="text-[10px] font-medium mt-0.5">Catat Sesi</span>
-        </button>
-        <button onclick="switchTab('invoice')" id="navInvoice" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
-            <i class="fa-solid fa-receipt text-lg"></i>
-            <span class="text-[10px] font-medium mt-0.5">Invoice</span>
-        </button>
-        <button onclick="switchTab('murid')" id="navMurid" class="flex flex-col items-center text-gray-400 hover:text-gray-600">
-            <i class="fa-solid fa-user-graduate text-lg"></i>
-            <span class="text-[10px] font-medium mt-0.5">Murid</span>
-        </button>
+    <nav class="fixed bottom-0 left-0 right-0 w-full bg-white/80 dark:bg-[#1c1c1e]/80 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 px-6 py-2 pb-safe flex justify-around items-center z-30 transition-colors shadow-[0_-4px_24px_rgba(0,0,0,0.02)]">
+        <div class="max-w-md w-full mx-auto flex justify-between px-4 pt-1">
+            <button onclick="switchTab('catat')" id="navCatat" class="flex flex-col items-center text-blue-500 w-16">
+                <i class="fa-solid fa-calendar-plus text-[22px] mb-1"></i>
+                <span class="text-[10px] font-semibold">Catat</span>
+            </button>
+            <button onclick="switchTab('invoice')" id="navInvoice" class="flex flex-col items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors w-16">
+                <i class="fa-solid fa-receipt text-[22px] mb-1"></i>
+                <span class="text-[10px] font-medium">Invoice</span>
+            </button>
+            <button onclick="switchTab('murid')" id="navMurid" class="flex flex-col items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors w-16">
+                <i class="fa-solid fa-users text-[22px] mb-1"></i>
+                <span class="text-[10px] font-medium">Murid</span>
+            </button>
+        </div>
     </nav>
 
     <!-- MODAL TAMBAH MURID -->
-    <div id="modalMurid" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4">
-        <div class="bg-white dark:bg-iosDark w-full max-w-md rounded-t-3xl sm:rounded-2xl p-5 space-y-4 shadow-xl border border-gray-100 dark:border-gray-800">
+    <div id="modalMurid" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-end sm:items-center justify-center p-0 sm:p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-iosDark-card w-full max-w-md rounded-t-[30px] sm:rounded-[24px] p-6 space-y-5 shadow-2xl border-t border-gray-100 dark:border-gray-800 transform translate-y-full sm:translate-y-0 transition-transform duration-300" id="modalMuridContent">
             <div class="flex justify-between items-center">
-                <h3 class="font-bold text-base">Tambah Murid Baru</h3>
-                <button onclick="tutupModalMurid()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fa-solid fa-xmark"></i></button>
+                <h3 class="font-bold text-[19px] tracking-tight">Murid Baru</h3>
+                <button onclick="tutupModalMurid()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-iosDark-input flex items-center justify-center text-gray-500 active:scale-95"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
-            <form onsubmit="simpanMurid(event)" class="space-y-3">
+            <form onsubmit="simpanMurid(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Nama Murid</label>
-                    <input type="text" id="mNama" required placeholder="Contoh: Budi Santoso" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Nama Lengkap</label>
+                    <input type="text" id="mNama" required placeholder="Misal: Budi Santoso" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-4 py-3.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">No. WhatsApp Orang Tua</label>
-                    <input type="text" id="mWa" required placeholder="08123456789" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">No. WhatsApp Ortu</label>
+                    <input type="tel" id="mWa" required placeholder="08123456789" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-4 py-3.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500 mb-1">Tarif per Sesi (Rp)</label>
-                    <input type="number" id="mTarif" required placeholder="100000" class="w-full bg-gray-50 dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-xl px-3 py-2 text-sm">
+                    <label class="block text-[13px] font-medium text-gray-500 dark:text-gray-400 mb-1.5 ml-1">Tarif per Sesi (Rp)</label>
+                    <input type="number" id="mTarif" required placeholder="100000" class="w-full bg-gray-100 dark:bg-iosDark-input border-0 rounded-xl px-4 py-3.5 text-[15px] focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors">
                 </div>
-                <button type="submit" class="w-full bg-blue-600 text-white font-medium py-2.5 rounded-xl text-sm shadow-sm">Simpan Murid</button>
+                <div class="pt-2">
+                    <button type="submit" class="w-full bg-blue-500 hover:bg-blue-600 active:bg-blue-700 text-white font-semibold py-3.5 rounded-xl text-[16px] shadow-md shadow-blue-500/20 transition-all">
+                        Simpan
+                    </button>
+                </div>
             </form>
         </div>
     </div>
 
     <!-- MODAL PREVIEW INVOICE & CETAK -->
-    <div id="modalInvoice" class="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto">
-        <div class="bg-white dark:bg-iosDark w-full max-w-lg rounded-2xl p-6 space-y-4 shadow-xl max-h-[90vh] overflow-y-auto border border-gray-100 dark:border-gray-800">
-            <div class="flex justify-between items-center border-b pb-3 dark:border-gray-800">
+    <div id="modalInvoice" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 overflow-y-auto opacity-0 transition-opacity duration-300">
+        <div class="bg-ios-bg dark:bg-[#000000] w-full max-w-lg rounded-[24px] p-4 sm:p-6 space-y-4 shadow-2xl max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-300" id="modalInvoiceContent">
+            
+            <div class="flex justify-between items-center mb-2 px-2">
                 <div>
-                    <h3 class="font-bold text-base" id="invModalTitle">Invoice Les</h3>
-                    <p class="text-xs text-gray-400" id="invModalPeriode">Periode</p>
+                    <h3 class="font-bold text-[19px] tracking-tight" id="invModalTitle">Invoice</h3>
+                    <p class="text-[13px] text-gray-500 font-medium" id="invModalPeriode">Periode</p>
                 </div>
-                <button onclick="tutupModalInvoice()" class="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-500"><i class="fa-solid fa-xmark"></i></button>
+                <button onclick="tutupModalInvoice()" class="w-8 h-8 rounded-full bg-gray-200 dark:bg-[#1c1c1e] flex items-center justify-center text-gray-500 active:scale-95"><i class="fa-solid fa-xmark text-lg"></i></button>
             </div>
 
-            <!-- Area yang akan dijadikan PDF -->
-            <div id="invoiceArea" class="bg-white text-gray-800 p-4 rounded-xl border border-gray-200 space-y-3 text-xs">
-                <div class="flex justify-between items-start border-b pb-3">
+            <!-- Area yang akan dijadikan PDF (Selalu Putih agar hasil cetak bagus) -->
+            <div id="invoiceArea" class="bg-white text-black p-6 rounded-2xl shadow-sm space-y-5 text-[13px] border border-gray-100 relative overflow-hidden">
+                <!-- Elemen dekoratif -->
+                <div class="absolute top-0 left-0 w-full h-2 bg-blue-500"></div>
+
+                <div class="flex justify-between items-start border-b border-gray-100 pb-4 mt-2">
                     <div>
-                        <h4 class="font-bold text-sm text-blue-600">LES PRIVAT EXCELLENT</h4>
-                        <p class="text-gray-500">Guru Les Privat Profesional</p>
+                        <h4 class="font-bold text-[17px] text-blue-600 tracking-tight">INVOICE LES</h4>
+                        <p class="text-gray-500 mt-0.5">CEKELAS	(Cek Kemampuan, Naik Kelas) 
+                            by Melani</p>
                     </div>
                     <div class="text-right">
-                        <p class="font-semibold" id="printNoInv">INV/2026/11/001</p>
-                        <p class="text-gray-500" id="printTanggalCetak">Tanggal: 12 Nov 2026</p>
+                        <p class="font-bold text-gray-800" id="printNoInv">INV/2026/11/001</p>
+                        <p class="text-gray-500 mt-0.5" id="printTanggalCetak">Tgl: 12 Nov 2026</p>
                     </div>
                 </div>
+
                 <div>
-                    <p class="text-gray-500">Kepada Yth. Orang Tua dari:</p>
-                    <p class="font-bold text-sm" id="printNamaMurid">-</p>
+                    <p class="text-gray-500 mb-1">Kepada Yth. Orang Tua/Wali dari:</p>
+                    <p class="font-bold text-[15px] text-gray-800" id="printNamaMurid">-</p>
                 </div>
-                <table class="w-full text-left border-collapse">
+
+                <table class="w-full text-left border-collapse mt-2">
                     <thead>
-                        <tr class="border-b bg-gray-50">
-                            <th class="py-1.5 px-2">Tanggal</th>
-                            <th class="py-1.5 px-2">Materi</th>
-                            <th class="py-1.5 px-2 text-center">Sesi</th>
-                            <th class="py-1.5 px-2 text-right">Biaya</th>
+                        <tr class="border-b-2 border-gray-800 bg-white">
+                            <th class="py-2 px-1 font-bold text-gray-800 w-1/4">Tanggal</th>
+                            <th class="py-2 px-1 font-bold text-gray-800">Catatan/Materi</th>
+                            <th class="py-2 px-1 text-center font-bold text-gray-800 w-12">Sesi</th>
+                            <th class="py-2 px-1 text-right font-bold text-gray-800 w-1/4">Biaya</th>
                         </tr>
                     </thead>
-                    <tbody id="printTabelItem">
+                    <tbody id="printTabelItem" class="text-gray-700">
                         <!-- Dinamis -->
                     </tbody>
                 </table>
-                <div class="border-t pt-2 flex justify-between font-bold text-sm">
-                    <span>Total Tagihan:</span>
+
+                <div class="border-t-2 border-gray-800 pt-3 flex justify-between font-bold text-[15px]">
+                    <span class="text-gray-800">Total Tagihan:</span>
                     <span id="printTotalTagihan" class="text-blue-600">Rp 0</span>
                 </div>
-                <div class="bg-gray-50 p-2.5 rounded-lg text-[11px] text-gray-600 space-y-1">
-                    <p class="font-semibold">Pembayaran transfer ke:</p>
-                    <p>BCA a.n. Guru Les (No. Rek: 1234567890)</p>
-                    <p>Mohon konfirmasi setelah transfer. Terima kasih!</p>
+
+                <div class="bg-blue-50 p-4 rounded-xl text-[12px] text-blue-900 space-y-1 mt-4 border border-blue-100">
+                    <p class="font-bold text-[13px] mb-2"><i class="fa-solid fa-building-columns mr-1"></i> Informasi Pembayaran:</p>
+                    <p class="font-semibold text-[14px]">BSI (Bank Syariah Indonesia)</p>
+                    <p class="font-mono text-[14px] font-bold">7187111093</p>
+                    <p>a.n. <span class="font-bold">MELANI ZALSABILLA</span></p>
+                    <p class="mt-2 text-blue-700 italic">Mohon konfirmasi jika sudah melakukan transfer. Terima kasih!</p>
                 </div>
             </div>
 
-            <div class="flex space-x-2 pt-2">
-                <button onclick="downloadPDF()" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1">
-                    <i class="fa-solid fa-file-pdf"></i> <span>Download PDF</span>
+            <div class="flex space-x-3 pt-2 px-2">
+                <button onclick="downloadPDF()" class="flex-1 bg-white dark:bg-[#1c1c1e] text-blue-600 dark:text-blue-400 font-bold py-3.5 rounded-xl text-[14px] shadow-sm border border-gray-200 dark:border-gray-800 flex items-center justify-center space-x-2 active:bg-gray-50 dark:active:bg-gray-800 transition-colors">
+                    <i class="fa-solid fa-arrow-down"></i> <span>Unduh PDF</span>
                 </button>
-                <button onclick="kirimWA()" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 rounded-xl text-xs flex items-center justify-center space-x-1">
-                    <i class="fa-brands fa-whatsapp"></i> <span>Kirim ke WA</span>
+                <button onclick="kirimWA()" class="flex-1 bg-green-500 hover:bg-green-600 active:bg-green-700 text-white font-bold py-3.5 rounded-xl text-[14px] shadow-md shadow-green-500/20 flex items-center justify-center space-x-2 transition-colors">
+                    <i class="fa-brands fa-whatsapp text-lg"></i> <span>Kirim WA</span>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Script Aplikasi -->
+    <!-- CUSTOM CONFIRM MODAL iOS STYLE -->
+    <div id="confirmModal" class="fixed inset-0 bg-black/40 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white dark:bg-[#1c1c1e] w-[270px] rounded-2xl pt-5 text-center shadow-2xl transform scale-95 transition-transform duration-300" id="confirmContent">
+            <h3 class="font-semibold text-[17px] mb-1 px-4 tracking-tight" id="confirmTitle">Konfirmasi</h3>
+            <p class="text-[13px] text-gray-500 dark:text-gray-400 mb-5 px-4 leading-snug" id="confirmText">Apakah Anda yakin?</p>
+            <div class="flex border-t border-gray-200 dark:border-[#38383a]">
+                <button onclick="closeConfirm(false)" class="flex-1 py-3 text-blue-500 border-r border-gray-200 dark:border-[#38383a] text-[17px] hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-bl-2xl transition-colors">Batal</button>
+                <button onclick="closeConfirm(true)" class="flex-1 py-3 text-red-500 font-semibold text-[17px] hover:bg-gray-50 dark:hover:bg-gray-800/50 rounded-br-2xl transition-colors">Hapus</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // State Data Lokal
         let muridList = JSON.parse(localStorage.getItem('lt_murid')) || [
-            { id: '1', nama: 'Andi Pratama', wa: '08123456789', tarif: 100000 },
-            { id: '2', nama: 'Siti Rahma', wa: '08987654321', tarif: 120000 }
+            { id: '1', nama: 'Andi Pratama', wa: '08123456789', tarif: 100000 }
         ];
 
-        let sesiList = JSON.parse(localStorage.getItem('lt_sesi')) || [
-            { id: 's1', muridId: '1', tanggal: '2026-11-01', materi: 'Aljabar & Persamaan Linear', sesi: 1, lunas: false },
-            { id: 's2', muridId: '1', tanggal: '2026-11-05', materi: 'Pertidaksamaan Kuadrat', sesi: 1, lunas: false },
-            { id: 's3', muridId: '2', tanggal: '2026-11-03', materi: 'Hukum Newton I & II', sesi: 1.5, lunas: true }
-        ];
-
+        let sesiList = JSON.parse(localStorage.getItem('lt_sesi')) || [];
         let activeInvoiceData = null;
+        let confirmCallback = null;
 
         // Inisialisasi awal
         document.addEventListener('DOMContentLoaded', () => {
             document.getElementById('inputTanggal').valueAsDate = new Date();
             document.getElementById('filterBulan').value = new Date().toISOString().slice(0, 7);
+            
+            // Check preferensi tema pengguna sebelumnya
+            if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+                document.documentElement.classList.add('dark');
+                document.documentElement.classList.remove('light');
+                document.getElementById('themeIcon').className = "fa-solid fa-sun text-sm";
+            }
+            
             renderMuridSelect();
             renderRiwayat();
             renderMuridList();
@@ -264,14 +326,54 @@
             localStorage.setItem('lt_sesi', JSON.stringify(sesiList));
         }
 
-        // Navigasi Tab
+        // Custom Notifikasi Toast
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.classList.remove('opacity-0');
+            t.classList.add('translate-y-2');
+            setTimeout(() => {
+                t.classList.add('opacity-0');
+                t.classList.remove('translate-y-2');
+            }, 2500);
+        }
+
+        // Custom iOS Confirm Dialog
+        function showConfirm(title, message, callback) {
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmText').innerText = message;
+            confirmCallback = callback;
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmContent');
+            
+            modal.classList.remove('hidden');
+            // Trigger reflow
+            void modal.offsetWidth; 
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
+        }
+
+        function closeConfirm(result) {
+            const modal = document.getElementById('confirmModal');
+            const content = document.getElementById('confirmContent');
+            
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                if (result && confirmCallback) confirmCallback();
+            }, 300);
+        }
+
+        // Navigasi Tab (dengan efek transisi text)
         function switchTab(tab) {
             ['catat', 'invoice', 'murid'].forEach(t => {
                 document.getElementById(`tab-${t}`).classList.add('hidden');
-                document.getElementById(`nav${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "flex flex-col items-center text-gray-400";
+                document.getElementById(`nav${t.charAt(0).toUpperCase() + t.slice(1)}`).className = "flex flex-col items-center text-gray-400 dark:text-gray-500 hover:text-gray-600 transition-colors w-16";
             });
             document.getElementById(`tab-${tab}`).classList.remove('hidden');
-            document.getElementById(`nav${tab.charAt(0).toUpperCase() + tab.slice(1)}`).className = "flex flex-col items-center text-blue-600 dark:text-blue-400";
+            document.getElementById(`nav${tab.charAt(0).toUpperCase() + tab.slice(1)}`).className = "flex flex-col items-center text-blue-500 w-16 transition-colors";
         }
 
         // Dark Mode Toggle
@@ -281,67 +383,84 @@
             if (html.classList.contains('light')) {
                 html.classList.remove('light');
                 html.classList.add('dark');
-                icon.className = "fa-solid fa-sun";
+                icon.className = "fa-solid fa-sun text-sm";
+                localStorage.theme = 'dark';
             } else {
                 html.classList.remove('dark');
                 html.classList.add('light');
-                icon.className = "fa-solid fa-moon";
+                icon.className = "fa-solid fa-moon text-sm";
+                localStorage.theme = 'light';
             }
-        }
-
-        function setMateri(teks) {
-            document.getElementById('inputMateri').value = teks;
         }
 
         // Render Select Murid
         function renderMuridSelect() {
             const select = document.getElementById('selectMurid');
-            select.innerHTML = '<option value="">-- Pilih Nama Murid --</option>';
+            select.innerHTML = '<option value="">Pilih Nama Murid...</option>';
             muridList.forEach(m => {
-                select.innerHTML += `<option value="${m.id}">${m.nama} (Rp ${m.tarif.toLocaleString('id-ID')}/sesi)</option>`;
+                select.innerHTML += `<option value="${m.id}">${m.nama} (Rp ${m.tarif.toLocaleString('id-ID')})</option>`;
             });
         }
 
         // Simpan Sesi Baru
         function simpanSesi(e) {
             e.preventDefault();
+            const selectMurid = document.getElementById('selectMurid');
+            if (!selectMurid.value) {
+                showToast("Pilih murid terlebih dahulu!");
+                return;
+            }
+
+            const inputMateri = document.getElementById('inputMateri');
             const sesiBaru = {
                 id: 's_' + Date.now(),
-                muridId: document.getElementById('selectMurid').value,
+                muridId: selectMurid.value,
                 tanggal: document.getElementById('inputTanggal').value,
-                materi: document.getElementById('inputMateri').value,
+                materi: inputMateri.value,
                 sesi: parseFloat(document.getElementById('inputSesi').value),
                 lunas: false
             };
+            
             sesiList.unshift(sesiBaru);
             saveData();
             renderRiwayat();
             renderInvoice();
-            document.getElementById('inputMateri').value = '';
-            alert('Catatan sesi berhasil disimpan!');
+            
+            inputMateri.value = '';
+            showToast('Catatan sesi berhasil disimpan');
         }
 
         // Render Riwayat
         function renderRiwayat() {
             const container = document.getElementById('listRiwayat');
-            document.getElementById('totalSesiCount').innerText = `${sesiList.length} total sesi`;
+            document.getElementById('totalSesiCount').innerText = `${sesiList.length} total`;
             if (sesiList.length === 0) {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Belum ada sesi tercatat.</p>`;
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-6 text-gray-400">
+                        <i class="fa-regular fa-folder-open text-3xl mb-2 opacity-50"></i>
+                        <p class="text-[13px]">Belum ada sesi tercatat</p>
+                    </div>`;
                 return;
             }
             container.innerHTML = '';
             sesiList.slice(0, 5).forEach(s => {
                 const murid = muridList.find(m => m.id === s.muridId) || { nama: 'Murid Dihapus' };
                 const totalTarif = s.sesi * (murid.tarif || 0);
+                
+                // Format tanggal menjadi lebih bersahabat
+                const tgl = new Date(s.tanggal);
+                const formatTgl = `${tgl.getDate()} ${tgl.toLocaleString('id-ID', { month: 'short' })}`;
+
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 text-xs">
-                        <div>
-                            <p class="font-bold">${murid.nama}</p>
-                            <p class="text-gray-500">${s.tanggal} • ${s.materi} (${s.sesi} Sesi)</p>
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-iosDark-input p-3.5 rounded-[14px] text-[13px] border border-transparent dark:border-[#38383a]">
+                        <div class="flex-1 pr-3">
+                            <p class="font-bold text-[14px] text-gray-800 dark:text-gray-200 truncate">${murid.nama}</p>
+                            <p class="text-gray-500 mt-0.5 leading-snug"><span class="font-medium text-blue-500">${formatTgl}</span> • ${s.materi}</p>
                         </div>
-                        <div class="text-right">
-                            <p class="font-semibold text-blue-600">Rp ${totalTarif.toLocaleString('id-ID')}</p>
-                            <button onclick="hapusSesi('${s.id}')" class="text-red-500 text-[10px] mt-0.5">Hapus</button>
+                        <div class="text-right shrink-0 flex flex-col items-end">
+                            <p class="font-bold text-gray-800 dark:text-gray-200">Rp${totalTarif.toLocaleString('id-ID')}</p>
+                            <p class="text-[11px] text-gray-500 mb-1">${s.sesi} Sesi</p>
+                            <button onclick="hapusSesi('${s.id}')" class="text-red-500 bg-red-50 dark:bg-red-500/10 px-2 py-0.5 rounded-md font-medium text-[11px] active:scale-95 transition-transform">Hapus</button>
                         </div>
                     </div>
                 `;
@@ -349,17 +468,31 @@
         }
 
         function hapusSesi(id) {
-            if (confirm('Hapus catatan sesi ini?')) {
+            showConfirm("Hapus Sesi", "Catatan pertemuan ini akan dihapus secara permanen.", () => {
                 sesiList = sesiList.filter(s => s.id !== id);
                 saveData();
                 renderRiwayat();
                 renderInvoice();
-            }
+                showToast("Sesi dihapus");
+            });
         }
 
-        // Modal Murid
-        function bukaModalMurid() { document.getElementById('modalMurid').classList.remove('hidden'); }
-        function tutupModalMurid() { document.getElementById('modalMurid').classList.add('hidden'); }
+        // Modal Murid Animasi
+        function bukaModalMurid() { 
+            const modal = document.getElementById('modalMurid');
+            const content = document.getElementById('modalMuridContent');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth; // trigger reflow
+            modal.classList.remove('opacity-0');
+            content.classList.remove('translate-y-full');
+        }
+        function tutupModalMurid() { 
+            const modal = document.getElementById('modalMurid');
+            const content = document.getElementById('modalMuridContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('translate-y-full');
+            setTimeout(() => modal.classList.add('hidden'), 300);
+        }
 
         function simpanMurid(e) {
             e.preventDefault();
@@ -373,42 +506,57 @@
             saveData();
             renderMuridSelect();
             renderMuridList();
-            tutupModalMurid();
+            
             document.getElementById('mNama').value = '';
             document.getElementById('mWa').value = '';
             document.getElementById('mTarif').value = '';
+            tutupModalMurid();
+            showToast("Murid ditambahkan");
         }
 
         function renderMuridList() {
             const container = document.getElementById('listMurid');
             container.innerHTML = '';
+            
+            if (muridList.length === 0) {
+                 container.innerHTML = `<p class="text-[13px] text-gray-400 text-center py-4">Data murid kosong.</p>`;
+                 return;
+            }
+
             muridList.forEach(m => {
                 container.innerHTML += `
-                    <div class="flex justify-between items-center bg-gray-50 dark:bg-gray-900 p-2.5 rounded-xl border border-gray-100 dark:border-gray-800 text-xs">
-                        <div>
-                            <p class="font-bold">${m.nama}</p>
-                            <p class="text-gray-500">WA: ${m.wa} • Tarif: Rp ${m.tarif.toLocaleString('id-ID')}/sesi</p>
+                    <div class="flex justify-between items-center bg-gray-50 dark:bg-iosDark-input p-3.5 rounded-[14px] text-[13px] border border-transparent dark:border-[#38383a]">
+                        <div class="flex-1">
+                            <p class="font-bold text-[15px] text-gray-800 dark:text-gray-200">${m.nama}</p>
+                            <p class="text-gray-500 mt-0.5"><i class="fa-brands fa-whatsapp mr-1 text-green-500"></i> ${m.wa}</p>
+                            <p class="text-gray-500 font-medium mt-0.5">Rp ${m.tarif.toLocaleString('id-ID')}/sesi</p>
                         </div>
-                        <button onclick="hapusMurid('${m.id}')" class="text-red-500 text-xs"><i class="fa-solid fa-trash"></i></button>
+                        <button onclick="hapusMurid('${m.id}')" class="w-9 h-9 rounded-full bg-red-100 dark:bg-red-500/20 text-red-500 flex items-center justify-center active:scale-95 transition-transform ml-2">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
                     </div>
                 `;
             });
         }
 
         function hapusMurid(id) {
-            if (confirm('Hapus data murid ini?')) {
+            showConfirm("Hapus Murid", "Semua data murid ini akan dihapus. Lanjutkan?", () => {
                 muridList = muridList.filter(m => m.id !== id);
                 saveData();
                 renderMuridSelect();
                 renderMuridList();
-            }
+                renderInvoice();
+                showToast("Data murid dihapus");
+            });
         }
 
         // Render Invoice / Rekap Bulanan
         function renderInvoice() {
-            const bulanPilih = document.getElementById('filterBulan').value; // Format: YYYY-MM
+            const bulanPilih = document.getElementById('filterBulan').value;
             const container = document.getElementById('listTagihan');
             container.innerHTML = '';
+            
+            let totalPendapatanBulanIni = 0;
 
             if (!bulanPilih) return;
 
@@ -419,31 +567,40 @@
                 const totalSesi = sesiMuridBulanIni.reduce((acc, curr) => acc + curr.sesi, 0);
                 const totalBiaya = totalSesi * m.tarif;
                 const statusLunas = sesiMuridBulanIni.every(s => s.lunas);
+                
+                // Tambahkan ke total keseluruhan bulan ini
+                totalPendapatanBulanIni += totalBiaya;
 
                 container.innerHTML += `
-                    <div class="bg-gray-50 dark:bg-gray-900 p-3 rounded-xl border border-gray-100 dark:border-gray-800 text-xs space-y-2">
-                        <div class="flex justify-between items-center">
+                    <div class="bg-gray-50 dark:bg-iosDark-input p-4 rounded-[16px] text-[13px] border border-transparent dark:border-[#38383a] space-y-3">
+                        <div class="flex justify-between items-start">
                             <div>
-                                <p class="font-bold text-sm">${m.nama}</p>
-                                <p class="text-gray-500">${totalSesi} Sesi (${bulanPilih})</p>
+                                <p class="font-bold text-[15px] text-gray-800 dark:text-gray-200">${m.nama}</p>
+                                <p class="text-gray-500 mt-0.5">${totalSesi} Sesi Aktif</p>
                             </div>
-                            <span class="px-2 py-0.5 rounded-full text-[10px] font-medium ${statusLunas ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}">
-                                ${statusLunas ? 'Lunas' : 'Belum Lunas'}
-                            </span>
+                            <button onclick="toggleStatusLunas('${m.id}', '${bulanPilih}')" class="px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wide active:scale-95 transition-transform ${statusLunas ? 'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-400' : 'bg-orange-100 text-orange-700 dark:bg-orange-900/40 dark:text-orange-400'}">
+                                ${statusLunas ? '<i class="fa-solid fa-check mr-1"></i> LUNAS' : 'BELUM LUNAS'}
+                            </button>
                         </div>
-                        <div class="flex justify-between items-center pt-2 border-t border-gray-200 dark:border-gray-800">
-                            <span class="font-bold text-blue-600">Rp ${totalBiaya.toLocaleString('id-ID')}</span>
-                            <div class="space-x-1">
-                                <button onclick="toggleStatusLunas('${m.id}', '${bulanPilih}')" class="bg-gray-200 dark:bg-gray-800 text-gray-700 dark:text-gray-300 px-2.5 py-1 rounded-lg">Status</button>
-                                <button onclick="bukaModalInvoice('${m.id}', '${bulanPilih}')" class="bg-blue-600 text-white px-2.5 py-1 rounded-lg">Invoice</button>
-                            </div>
+                        <div class="flex justify-between items-center pt-3 border-t border-gray-200 dark:border-gray-700">
+                            <span class="font-bold text-[16px] text-gray-800 dark:text-gray-200">Rp ${totalBiaya.toLocaleString('id-ID')}</span>
+                            <button onclick="bukaModalInvoice('${m.id}', '${bulanPilih}')" class="bg-blue-500 hover:bg-blue-600 text-white px-3.5 py-1.5 rounded-xl font-medium shadow-sm shadow-blue-500/20 active:scale-95 transition-transform">
+                                Lihat Invoice
+                            </button>
                         </div>
                     </div>
                 `;
             });
 
+            // Update Header Angka Pendapatan
+            document.getElementById('angkaTotalPendapatan').innerText = `Rp ${totalPendapatanBulanIni.toLocaleString('id-ID')}`;
+
             if (container.innerHTML === '') {
-                container.innerHTML = `<p class="text-xs text-gray-400 text-center py-4">Tidak ada sesi les pada bulan ${bulanPilih}.</p>`;
+                container.innerHTML = `
+                    <div class="flex flex-col items-center justify-center py-8 text-gray-400">
+                        <i class="fa-regular fa-face-frown text-3xl mb-3 opacity-50"></i>
+                        <p class="text-[14px]">Tidak ada kelas di bulan ini</p>
+                    </div>`;
             }
         }
 
@@ -462,58 +619,135 @@
             const murid = muridList.find(m => m.id === muridId);
             const sesiMurid = sesiList.filter(s => s.muridId === muridId && s.tanggal.startsWith(bulan));
             
+            // Format label bulan ke teks (misal: November 2026)
+            const dBulan = new Date(bulan + '-01');
+            const strBulan = dBulan.toLocaleString('id-ID', { month: 'long', year: 'numeric' });
+
             document.getElementById('invModalTitle').innerText = `Invoice - ${murid.nama}`;
-            document.getElementById('invModalPeriode').innerText = `Periode: ${bulan}`;
-            document.getElementById('printNoInv').innerText = `INV/${bulan.replace('-', '/')}/${muridId}`;
-            document.getElementById('printTanggalCetak').innerText = `Tanggal: ${new Date().toLocaleDateString('id-ID')}`;
-            document.getElementById('printNamaMurid').innerText = `${murid.nama} (WA: ${murid.wa})`;
+            document.getElementById('invModalPeriode').innerText = `Periode: ${strBulan}`;
+            
+            // Format No Invoice: INV/bulan/tahun/urutan murid
+            const [yyyy, mm] = bulan.split('-');
+            const indexMurid = muridList.findIndex(m => m.id === muridId) + 1;
+            const strIndex = indexMurid.toString().padStart(3, '0');
+            document.getElementById('printNoInv').innerText = `INV/${mm}/${yyyy}/${strIndex}`;
+            
+            const skrg = new Date();
+            document.getElementById('printTanggalCetak').innerText = `Tgl: ${skrg.getDate()} ${skrg.toLocaleString('id-ID', { month: 'short', year: 'numeric' })}`;
+            document.getElementById('printNamaMurid').innerText = `${murid.nama}`;
 
             let tbody = '';
             let total = 0;
+            
+            // Urutkan berdasarkan tanggal
+            sesiMurid.sort((a,b) => new Date(a.tanggal) - new Date(b.tanggal));
+
             sesiMurid.forEach(s => {
                 const sub = s.sesi * murid.tarif;
                 total += sub;
+                const formatTgl = new Date(s.tanggal).toLocaleDateString('id-ID', { day: '2-digit', month: '2-digit', year: '2-digit' });
+                
                 tbody += `
-                    <tr class="border-b">
-                        <td class="py-1.5 px-2">${s.tanggal}</td>
-                        <td class="py-1.5 px-2">${s.materi}</td>
-                        <td class="py-1.5 px-2 text-center">${s.sesi}</td>
-                        <td class="py-1.5 px-2 text-right">Rp ${sub.toLocaleString('id-ID')}</td>
+                    <tr class="border-b border-gray-100">
+                        <td class="py-2 px-1 text-gray-600">${formatTgl}</td>
+                        <td class="py-2 px-1 font-medium text-gray-800">${s.materi}</td>
+                        <td class="py-2 px-1 text-center text-gray-600">${s.sesi}</td>
+                        <td class="py-2 px-1 text-right font-medium text-gray-800">Rp${sub.toLocaleString('id-ID')}</td>
                     </tr>
                 `;
             });
             document.getElementById('printTabelItem').innerHTML = tbody;
             document.getElementById('printTotalTagihan').innerText = `Rp ${total.toLocaleString('id-ID')}`;
 
-            activeInvoiceData = { murid, sesiMurid, total, bulan };
-            document.getElementById('modalInvoice').classList.remove('hidden');
+            activeInvoiceData = { murid, sesiMurid, total, bulan, strBulan };
+            
+            const modal = document.getElementById('modalInvoice');
+            const content = document.getElementById('modalInvoiceContent');
+            modal.classList.remove('hidden');
+            void modal.offsetWidth;
+            modal.classList.remove('opacity-0');
+            content.classList.remove('scale-95');
         }
 
         function tutupModalInvoice() {
-            document.getElementById('modalInvoice').classList.add('hidden');
+            const modal = document.getElementById('modalInvoice');
+            const content = document.getElementById('modalInvoiceContent');
+            modal.classList.add('opacity-0');
+            content.classList.add('scale-95');
+            setTimeout(() => modal.classList.add('hidden'), 300);
         }
 
         function downloadPDF() {
             const element = document.getElementById('invoiceArea');
+            const namaFile = `Invoice_${activeInvoiceData.murid.nama.replace(/\s+/g, '_')}_${activeInvoiceData.bulan}.pdf`;
+            
             const opt = {
-                margin: 10,
-                filename: `Invoice_${activeInvoiceData.murid.nama}_${activeInvoiceData.bulan}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+                margin: [10, 10, 10, 10],
+                filename: namaFile,
+                image: { type: 'jpeg', quality: 1 },
+                html2canvas: { scale: 3, useCORS: true, letterRendering: true },
+                jsPDF: { unit: 'mm', format: 'a5', orientation: 'portrait' }
             };
-            html2pdf().from(element).set(opt).save();
+            
+            showToast("Menyiapkan PDF...");
+            html2pdf().from(element).set(opt).save().then(() => {
+                showToast("PDF Berhasil Diunduh");
+            });
         }
 
-        function kirimWA() {
+        async function kirimWA() {
             const d = activeInvoiceData;
-            let pesan = `Halo Bapak/Ibu, berikut rincian tagihan les privat *${d.murid.nama}* periode *${d.bulan}*:\n\n`;
-            d.sesiMurid.forEach((s, idx) => {
-                pesan += `${idx + 1}. ${s.tanggal} - ${s.materi} (${s.sesi} Sesi)\n`;
-            });
-            pesan += `\n*Total Tagihan: Rp ${d.total.toLocaleString('id-ID')}*\n\nMohon transfer ke Rek. BCA 1234567890 a.n. Guru Les. Terima kasih!`;
-            const url = `https://wa.me/${d.murid.wa.replace(/^0/, '62')}?text=${encodeURIComponent(pesan)}`;
-            window.open(url, '_blank');
+            const element = document.getElementById('invoiceArea');
+            
+            showToast("Menyiapkan Gambar (JPG)...");
+            
+            try {
+                // Membuat gambar canvas dari area invoice
+                const canvas = await html2canvas(element, { scale: 3, useCORS: true });
+                
+                canvas.toBlob(async (blob) => {
+                    const namaFile = `Invoice_${d.murid.nama.replace(/\s+/g, '_')}.jpg`;
+                    const file = new File([blob], namaFile, { type: 'image/jpeg' });
+                    
+                    let pesan = `Halo Bapak/Ibu, berikut invoice les untuk *${d.murid.nama}* periode *${d.strBulan}*.\n\n`;
+                    pesan += `*TOTAL TAGIHAN: Rp ${d.total.toLocaleString('id-ID')}*\n\n`;
+                    pesan += `Mohon transfer ke BSI *7187111093* a.n. *MELANI ZALSABILLA*.\nTerima kasih! 🙏`;
+
+                    // Menggunakan Web Share API (didukung Safari iOS 15+) untuk membagikan file langsung ke WA
+                    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                        try {
+                            await navigator.share({
+                                files: [file],
+                                title: 'Invoice Les',
+                                text: pesan
+                            });
+                            showToast("Berhasil membuka menu bagikan");
+                        } catch (err) {
+                            console.log("Share dibatalkan atau gagal", err);
+                        }
+                    } else {
+                        // Fallback jika tidak support share file (Unduh + Buka WA teks)
+                        const urlBlob = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = urlBlob;
+                        a.download = file.name;
+                        a.click();
+                        URL.revokeObjectURL(urlBlob);
+                        
+                        showToast("Gambar terunduh. Membuka WA...");
+                        
+                        let noWa = d.murid.wa;
+                        if (noWa.startsWith('0')) noWa = '62' + noWa.substring(1);
+                        const waUrl = `https://wa.me/${noWa}?text=${encodeURIComponent(pesan + '\n\n*(Tolong lampirkan gambar invoice yang baru saja terunduh)*')}`;
+                        
+                        setTimeout(() => { window.open(waUrl, '_blank'); }, 1500);
+                    }
+                }, 'image/jpeg', 0.9);
+                
+            } catch(e) {
+                showToast("Gagal memproses gambar");
+                console.error(e);
+            }
         }
     </script>
 </body>
